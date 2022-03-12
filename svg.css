@@ -1,0 +1,11 @@
+html body {
+  background-color: aliceblue;
+}
+
+#canvas {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 2500px;
+  background-color: aqua;
+}

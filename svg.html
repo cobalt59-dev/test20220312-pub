@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>SVG Sample</title>
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/svg.js/3.1.2/svg.min.js"></script>
+        <link href="svg.css" rel="stylesheet" type="text/css">
+        <script>
+            window.addEventListener("load", init);
+
+            let canvasElement;
+            let canvas;
+            let pathGroup;
+            let isDrawing = false;
+            let drawingPath = null;
+            const drawingPoints = [];
+            // const strokes = [];
+            const stroke = {
+                color: '#000',
+                width: 2,
+                linecap: 'round',
+                linejoin: 'round'
+            };
+
+            function init() {
+                canvasElement = document.getElementById('canvas');
+                const canvasBoundingClientRect = canvasElement.getBoundingClientRect();
+
+                canvas = SVG()
+                    .addTo('#canvas')
+                    .size(canvasBoundingClientRect.width, canvasBoundingClientRect.height)
+                    .on("touchstart", touchStart)
+                    .on("touchmove", touchMove)
+                    .on("touchend", touchEnd);
+                canvas.rect(canvasBoundingClientRect.width, canvasBoundingClientRect.height)
+                    .fill('#ffd');
+                pathGroup = canvas.group();
+            }
+
+            function touchStart(ev) {
+                isDrawing = true;
+                drawingPath = null;
+                drawingPoints.length = 0;
+            }
+
+            function touchMove(ev) {
+                if (!isDrawing) return;
+
+                const canvasBoundingClientRect = canvasElement.getBoundingClientRect();
+                const rectX = canvasBoundingClientRect.x;
+                const rectY = canvasBoundingClientRect.y;
+                const touchX = ev.changedTouches[0].clientX;
+                const touchY = ev.changedTouches[0].clientY;
+                const scrollX = canvasElement.scrollLeft;
+                const scrollY = canvasElement.scrollTop;
+                const x = touchX + scrollX - rectX;
+                const y = touchY + scrollY - rectY;
+                drawingPoints.push({ x: x, y: y });
+                drawFreeHand();
+                event.preventDefault();
+            }
+
+            function touchEnd(ev) {
+                isDrawing = false;
+                if (!drawingPath) return;
+                drawFreeHand();
+                drawingPath = null;
+            }
+
+            function drawFreeHand() {
+                if (drawingPath) {
+                    drawingPath.remove();
+                }
+                const path = drawingPoints
+                    .map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x} ${p.y}`)
+                    .join(' ');
+                drawingPath = pathGroup
+                    .path(path)
+                    .fill('none')
+                    .stroke(stroke);
+                // if (!isDrawing) {
+                //     strokes.push(path);
+                // }
+            }
+
+            function clearAll() {
+                pathGroup.clear();
+            }
+
+            function setStrokeColor(color) {
+                stroke.color = color;
+            }
+
+            function setStrokeWidth(width) {
+                stroke.width = width;
+            }
+        </script>
+    </head>
+    <body>
+        <input id="btnClearAll" type="button" value="clear" onclick="javascript:clearAll()" />
+        <input id="btnColorRed" type="button" value="red" onclick="javascript:setStrokeColor('#f00')" />
+        <input id="btnColorBlue" type="button" value="blue" onclick="javascript:setStrokeColor('#00f')" />
+        <input id="btnColorBlack" type="button" value="black" onclick="javascript:setStrokeColor('#000')" />
+        <input id="btnWidth2" type="button" value="2" onclick="javascript:setStrokeWidth(2)" />
+        <input id="btnWidth6" type="button" value="6" onclick="javascript:setStrokeWidth(6)" />
+        <div id="canvas"></div>
+    </body>
+</html>
